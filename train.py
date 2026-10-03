@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import random
 import time
 from pathlib import Path
@@ -58,14 +59,44 @@ def build_datum(example, tokenizer, max_length: int):
 
 
 def batch_loss(result, batch) -> float:
+    loss_sum, token_count = loss_totals(result, batch)
+    return loss_sum / token_count
+
+
+def loss_totals(result, batch) -> tuple[float, float]:
+    """返回加权负对数似然总和与有效 token 数。"""
     logprobs = np.concatenate([np.asarray(x["logprobs"]) for x in result.loss_fn_outputs])
     weights = np.concatenate([np.asarray(x.loss_fn_inputs["weights"]) for x in batch])
-    return float(-np.dot(logprobs, weights) / weights.sum())
+    token_count = float(weights.sum())
+    if token_count <= 0:
+        raise ValueError("batch 中没有有效的 assistant token")
+    return float(-np.dot(logprobs, weights)), token_count
+
+
+def evaluate_loss(trainer, datums, batch_size: int) -> float:
+    """在验证集上做前向计算，按有效 token 汇总交叉熵。"""
+    total_loss = 0.0
+    total_tokens = 0.0
+    for start in tqdm(range(0, len(datums), batch_size), desc="Validation", unit="batch", leave=False):
+        batch = datums[start:start + batch_size]
+        result = trainer.forward(batch, "cross_entropy").result()
+        loss_sum, token_count = loss_totals(result, batch)
+        total_loss += loss_sum
+        total_tokens += token_count
+    if total_tokens <= 0:
+        raise ValueError("验证集中没有有效 token")
+    return total_loss / total_tokens
+
+
+def append_jsonl(path: Path, record: dict) -> None:
+    with path.open("a", encoding="utf-8") as file:
+        file.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=ROOT / "data/train.json")
+    parser.add_argument("--valid-data", type=Path, default=ROOT / "data/valid.json")
     parser.add_argument("--base-model", default="Qwen/Qwen3.5-4B")
     parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--batch-size", type=int, default=16)
@@ -79,7 +110,12 @@ def main() -> None:
         parser.error("epochs、batch-size 必须为正数，max-length 至少为 2")
 
     args.run_dir.mkdir(parents=True, exist_ok=True)
+    metrics_path = args.run_dir / "metrics.jsonl"
+    if metrics_path.exists():
+        raise FileExistsError(f"运行目录已有日志，请换一个 --run-dir: {metrics_path}")
+    started = time.time()
     examples = load_examples(args.data)
+    valid_examples = load_examples(args.valid_data)
     service = trio.ServiceClient()
     trainer = service.create_lora_training_client(
         base_model=args.base_model, rank=args.rank, seed=args.seed,
@@ -87,43 +123,85 @@ def main() -> None:
     )
     tokenizer = trainer.get_tokenizer()
     datums = [build_datum(row, tokenizer, args.max_length) for row in examples]
+    valid_datums = [build_datum(row, tokenizer, args.max_length) for row in valid_examples]
     steps_per_epoch = (len(datums) + args.batch_size - 1) // args.batch_size
-    config = {**vars(args), "data": str(args.data), "run_dir": str(args.run_dir),
-              "num_examples": len(datums), "steps_per_epoch": steps_per_epoch,
+    config = {**vars(args), "data": str(args.data), "valid_data": str(args.valid_data),
+              "run_dir": str(args.run_dir), "num_examples": len(datums),
+              "num_valid_examples": len(valid_datums), "steps_per_epoch": steps_per_epoch,
               "system_prompt": SYSTEM_PROMPT, "train_mlp": True,
               "train_attn": True, "train_unembed": True}
     (args.run_dir / "config.json").write_text(json.dumps(config, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
 
     run = swanlab.init(project="chat-huanhuan-lora", experiment_name=f"qwen3.5-4b-r{args.rank}", config=config)
-    log_path = args.run_dir / "train.jsonl"
     rng = random.Random(args.seed)
-    started = time.time()
     step = 0
+    best_val_loss = math.inf
+    best_checkpoint = None
+    history = []
+    name = f"chat-huanhuan-qwen3.5-4b-r{args.rank}-{int(started)}"
     with tqdm(total=args.epochs * steps_per_epoch, desc="LoRA SFT", unit="batch") as bar:
         for epoch in range(args.epochs):
+            epoch_loss_sum = 0.0
+            epoch_tokens = 0.0
             order = list(range(len(datums)))
             rng.shuffle(order)
             for start in range(0, len(order), args.batch_size):
                 batch = [datums[i] for i in order[start:start + args.batch_size]]
                 result = trainer.forward_backward(batch, "cross_entropy").result()
                 trainer.optim_step(trio.AdamParams(learning_rate=args.learning_rate)).result()
-                loss = batch_loss(result, batch)
-                record = {"step": step, "epoch": epoch + 1, "loss": loss,
+                loss_sum, token_count = loss_totals(result, batch)
+                loss = loss_sum / token_count
+                epoch_loss_sum += loss_sum
+                epoch_tokens += token_count
+                record = {"type": "train_step", "step": step, "epoch": epoch + 1,
+                          "loss": loss, "assistant_tokens": int(token_count),
                           "elapsed_seconds": time.time() - started}
-                with log_path.open("a", encoding="utf-8") as f:
-                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                append_jsonl(metrics_path, record)
                 swanlab.log({"train/loss": loss, "epoch": epoch + 1}, step=step)
                 bar.update(1)
                 bar.set_postfix(loss=f"{loss:.4f}", epoch=f"{epoch + 1}/{args.epochs}")
                 step += 1
 
-    name = f"chat-huanhuan-qwen3.5-4b-r{args.rank}"
-    sampler_weights = trainer.save_weights_for_sampler(name=name).result()
-    train_state = trainer.save_state(name=f"{name}-train", overwrite=True).result()
+            train_loss = epoch_loss_sum / epoch_tokens
+            val_loss = evaluate_loss(trainer, valid_datums, args.batch_size)
+            if not math.isfinite(val_loss):
+                raise ValueError(f"验证 loss 非有限值: {val_loss}")
+            epoch_record = {"type": "epoch", "epoch": epoch + 1,
+                            "train_loss": train_loss, "val_loss": val_loss,
+                            "elapsed_seconds": time.time() - started}
+            append_jsonl(metrics_path, epoch_record)
+            history.append(epoch_record)
+            swanlab.log({"train/epoch_loss": train_loss, "valid/loss": val_loss}, step=step)
+            print(f"Epoch {epoch + 1}: train_loss={train_loss:.4f}, val_loss={val_loss:.4f}")
+
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                checkpoint_name = f"{name}-best-epoch-{epoch + 1}"
+                sampler = trainer.save_weights_for_sampler(name=checkpoint_name).result()
+                state = trainer.save_state(name=f"{checkpoint_name}-train", overwrite=True).result()
+                best_checkpoint = {
+                    "epoch": epoch + 1,
+                    "train_loss": train_loss,
+                    "val_loss": val_loss,
+                    "sampler_model_path": sampler.path,
+                    "sampler_size_bytes": getattr(sampler, "size", None),
+                    "train_state_path": state.path,
+                }
+                (args.run_dir / "best_checkpoint.json").write_text(
+                    json.dumps(best_checkpoint, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
+
+            (args.run_dir / "history.json").write_text(
+                json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+
+    sampler_weights = trainer.save_weights_for_sampler(name=f"{name}-final").result()
+    train_state = trainer.save_state(name=f"{name}-final-train", overwrite=True).result()
     artifact = {"base_model": args.base_model, "sampler_model_path": sampler_weights.path,
                 "sampler_size_bytes": getattr(sampler_weights, "size", None),
                 "train_state_path": train_state.path, "completed_steps": step,
-                "elapsed_seconds": time.time() - started}
+                "elapsed_seconds": time.time() - started,
+                "best_checkpoint": best_checkpoint}
     (args.run_dir / "artifacts.json").write_text(json.dumps(artifact, ensure_ascii=False, indent=2), encoding="utf-8")
     run.finish()
     print(json.dumps(artifact, ensure_ascii=False, indent=2))

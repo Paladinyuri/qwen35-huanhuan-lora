@@ -36,10 +36,23 @@ trio login
 ## 训练
 
 ```powershell
-python train.py --epochs 2 --batch-size 16 --rank 32 --learning-rate 1e-4 --run-dir results/run-r32
+python train.py --data data/train.json --valid-data data/valid.json --epochs 2 --batch-size 16 --rank 32 --learning-rate 1e-4 --run-dir results/run-r32
 ```
 
-这次实验使用 LoRA rank 32、最大长度 1,024、训练 2 个 epoch。loss 只计算 assistant 的回答部分，不计算 system 和 user 消息。训练日志、实际参数和权重路径会保存在 `results/run-r32/`。
+这次实验使用 LoRA rank 32、最大长度 1,024、训练 2 个 epoch。loss 只计算 assistant 的回答部分，不计算 system 和 user 消息。每个 epoch 结束后，脚本会用 `valid.json` 做一次不累积梯度的前向计算，并在验证 loss 降低时保存新的最佳 checkpoint。
+
+训练目录包含：
+
+- `metrics.jsonl`：每一步训练 loss 和每个 epoch 的训练/验证 loss；
+- `history.json`：用于画曲线的 epoch 汇总；
+- `best_checkpoint.json`：验证 loss 最低的 checkpoint；
+- `artifacts.json`：最终 checkpoint，以及最佳 checkpoint 的引用。
+
+同一个 `--run-dir` 不会被静默覆盖。训练完成后可以生成 loss 曲线：
+
+```powershell
+python scripts/plot_history.py results/run-r32/history.json
+```
 
 ## 评估
 
@@ -77,6 +90,7 @@ configs/                 固定评估问题
 results/                 本次实验结果和说明
 scripts/prepare_data.py  数据去重与划分
 scripts/download_adapter.py
+scripts/plot_history.py  绘制训练/验证 loss 曲线
 train.py                 训练入口
 evaluate.py              基座/LoRA 对照评估
 ```
