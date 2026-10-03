@@ -1,0 +1,29 @@
+{
+  "source_sha256": "1bbe8b09857274adc58186919622554df7f71dcee8655537f6a8b80993d6e6f3",
+  "seed": 42,
+  "raw_records": 3729,
+  "exact_duplicates_removed": 112,
+  "unique_records": 3617,
+  "unique_user_prompts": 3491,
+  "prompts_with_multiple_outputs": 50,
+  "split_records": {
+    "train": 2887,
+    "valid": 371,
+    "test": 359
+  },
+  "split_user_prompts": {
+    "train": 2786,
+    "valid": 358,
+    "test": 347
+  },
+  "prompt_overlap": {
+    "train_valid": 0,
+    "train_test": 0,
+    "valid_test": 0
+  },
+  "output_length_chars": {
+    "min": 2,
+    "mean": 27.439590821122476,
+    "max": 208
+  }
+}

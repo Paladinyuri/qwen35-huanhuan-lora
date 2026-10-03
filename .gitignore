@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+data/
+weights/
+huanhuan.json
+results/*
+!results/.gitkeep
+!results/README.md
+!results/evaluation.json
+!results/evaluation.md
+!results/EVALUATION_REPORT.md
+!results/checkpoint.json
+!results/data_stats.json
+swanlog/
+

@@ -1,0 +1,10 @@
+{
+  "checkpoint_id": "ckpt_dgwydrq0t4zg",
+  "checkpoint_type": "sampler",
+  "created_at_utc": "2026-10-03T07:25:28.919000Z",
+  "path": "trio://run_1hfkezqoye4j/sampler_weights/chat-huanhuan-qwen3.5-4b",
+  "size_bytes": 145889792,
+  "public": false,
+  "expires_at": null,
+  "note": "Sampler 权重可用于推理，不能恢复优化器或原训练曲线。"
+}
