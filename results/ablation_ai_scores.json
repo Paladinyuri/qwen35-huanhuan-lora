@@ -1,0 +1,33 @@
+{
+  "rater": "single AI heuristic review",
+  "scores": {
+    "rank8": {
+      "role": 3.2666666666666666,
+      "relevance": 3.4166666666666665,
+      "naturalness": 3.4833333333333334,
+      "factuality": 3.5833333333333335,
+      "weighted_wins": 7.999999999999999
+    },
+    "rank32": {
+      "role": 3.15,
+      "relevance": 3.45,
+      "naturalness": 3.65,
+      "factuality": 3.65,
+      "weighted_wins": 8.666666666666666
+    },
+    "rank16": {
+      "role": 3.216666666666667,
+      "relevance": 3.4,
+      "naturalness": 3.4833333333333334,
+      "factuality": 3.65,
+      "weighted_wins": 8.666666666666666
+    },
+    "base": {
+      "role": 3.7666666666666666,
+      "relevance": 3.9166666666666665,
+      "naturalness": 3.95,
+      "factuality": 3.75,
+      "weighted_wins": 34.666666666666664
+    }
+  }
+}

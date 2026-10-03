@@ -98,4 +98,4 @@ python -m unittest discover -s tests -v
 python -m py_compile train.py evaluate.py scripts/prepare_data.py scripts/download_adapter.py
 ```
 
-目前已经完成干净数据划分、验证集选模、60 条分类评估和 rank 8/16/32 消融。人工盲评表已生成，但仍需由不了解模型身份的评审者填写，因此仓库不会用自动指标代替人工质量结论。
+目前已经完成干净数据划分、验证集选模、60 条分类评估和 rank 8/16/32 消融。仓库提供空白 A–D 盲评表和一份单一 AI 初评；AI 初评不能替代多名真人评审，因此报告会将两者明确区分。

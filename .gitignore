@@ -15,6 +15,8 @@ results/*
 !results/data_stats.json
 !results/blind_eval_form.csv
 !results/ablation_blind_eval.csv
+!results/ablation_blind_eval_ai.csv
+!results/ablation_ai_scores.json
 !results/ABLATION_REPORT.md
 !results/ablation_summary.json
 !results/evaluation-r8.json

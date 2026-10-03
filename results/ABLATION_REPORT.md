@@ -31,6 +31,19 @@
 
 [`ablation_blind_eval.csv`](ablation_blind_eval.csv) 将 Base、rank 8、rank 16、rank 32 随机标记为 A–D。评分列覆盖角色一致性、相关性、自然度和事实性，每项 1–5 分。模型映射保存在本地 `ablation_blind_key.json`，在评审完成前不提交仓库，避免泄漏答案。
 
-人工分数尚未填写，因此当前不能声称 rank 32 的整体回答质量最好。自动指标只支持“rank 32 的重复与截断略少”，而不是“rank 32 全面更优”。
+## AI 初评结果
 
-结构化汇总见 [`ablation_summary.json`](ablation_summary.json)，逐条输出见 `evaluation-r8.md`、`evaluation-r16.md` 和 `evaluation.md`。
+仓库同时提供一份已经填写的 [`ablation_blind_eval_ai.csv`](ablation_blind_eval_ai.csv)。评分时脚本只读取随机化后的 A–D 回答，完成逐题评分后才读取本地映射并按模型汇总。
+
+| 模型 | 角色一致性 | 相关性 | 自然度 | 事实性 | 加权胜出题数 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Base | **3.77** | **3.92** | **3.95** | **3.75** | **34.67** |
+| rank 8 | 3.27 | 3.42 | 3.48 | 3.58 | 8.00 |
+| rank 16 | 3.22 | 3.40 | 3.48 | 3.65 | 8.67 |
+| rank 32 | 3.15 | **3.45** | **3.65** | **3.65** | **8.67** |
+
+这份初评采用可复现规则，对重复、套话回避、知识题错误和危险建议做显式扣分。基座虽然冗长，却通常提供了更完整且更谨慎的回答，因此综合分高于三组 LoRA。LoRA 内部，rank 32 自然度最高，rank 8 的角色词命中更多，但差距不大。
+
+这不是独立真人评审，评分规则也无法完全判断人物关系、文学风格和隐含语义。因此它应标为“单一 AI 初评”，不能写成真人实验。正式结论仍建议再找至少两名不了解模型映射的人填写空白盲评表，并报告评分者间一致性。
+
+结构化自动指标见 [`ablation_summary.json`](ablation_summary.json)，AI 初评分数见 [`ablation_ai_scores.json`](ablation_ai_scores.json)，逐条输出见 `evaluation-r8.md`、`evaluation-r16.md` 和 `evaluation.md`。
