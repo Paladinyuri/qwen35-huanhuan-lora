@@ -62,17 +62,18 @@ python scripts/plot_history.py results/run-r32-clean/history.json
 python evaluate.py --model-path "trio://你的权重路径" --output results/evaluation.json
 ```
 
-评估集固定为 15 个问题，涵盖角色身份、宫廷对话、普通任务和提示覆盖等情况。基座模型与 LoRA 模型使用相同的 system prompt 和解码参数，逐条结果见 [`results/EVALUATION_REPORT.md`](results/EVALUATION_REPORT.md)。
+评估集包含 60 个问题，分为角色与关系、宫廷情境、开放表达、通用知识、抗提示覆盖、安全与诚实六类。基座模型与 LoRA 模型使用相同的 system prompt 和解码参数。脚本还会统计重复 3-gram、长度截断，并为每个回答检索最相似的训练答案。逐条结果见 [`results/EVALUATION_REPORT.md`](results/EVALUATION_REPORT.md)。
 
 在目前保存的这次实验中：
 
-- 基座模型平均回复 199.4 字，LoRA 模型平均回复 29.5 字；
+- 基座模型平均回复 201.7 字，LoRA 模型平均回复 38.6 字；
 - LoRA 的回答更接近简短的剧本台词；
-- 15 条 LoRA 回答中有 1 条与干净训练集答案完全相同；
-- 简单风格词命中率由 86.7% 降至 66.7%；
+- 60 条 LoRA 回答中有 5 条与干净训练集答案完全相同；
+- 10% 的 LoRA 回答出现高 3-gram 重复；
+- LoRA 将达到长度上限的比例从 81.7% 降到 8.3%；
 - 第 2 轮训练 loss 继续下降，但验证 loss 上升，因此最终选择 epoch 1。
 
-这些结果说明微调明显改变了模型的回复方式，但还不能说明整体质量一定更好。回复变短的同时也出现了训练语料记忆，后续还需要扩大测试集并做人工盲评。
+这些结果说明微调明显改变了模型的回复方式，但还不能说明整体质量一定更好。回复变短的同时出现了训练语料记忆、循环生成和安全回答退化。rank 8/16/32 消融及人工盲评表见 [`results/ABLATION_REPORT.md`](results/ABLATION_REPORT.md)。
 
 ## 权重
 
@@ -97,4 +98,4 @@ python -m unittest discover -s tests -v
 python -m py_compile train.py evaluate.py scripts/prepare_data.py scripts/download_adapter.py
 ```
 
-目前的主要不足是原始训练没有保存完整 loss 曲线，固定评估也只有 15 个问题。这一版仓库主要用于记录一次完整的 LoRA 实验流程和已经观察到的结果。
+目前已经完成干净数据划分、验证集选模、60 条分类评估和 rank 8/16/32 消融。人工盲评表已生成，但仍需由不了解模型身份的评审者填写，因此仓库不会用自动指标代替人工质量结论。

@@ -1,0 +1,19 @@
+{
+  "data": "data\\train.json",
+  "valid_data": "data\\valid.json",
+  "base_model": "Qwen/Qwen3.5-4B",
+  "epochs": 1,
+  "batch_size": 16,
+  "rank": 8,
+  "learning_rate": 0.0001,
+  "max_length": 1024,
+  "seed": 42,
+  "run_dir": "results\\run-r8-clean",
+  "num_examples": 2887,
+  "num_valid_examples": 371,
+  "steps_per_epoch": 181,
+  "system_prompt": "现在你要扮演皇帝身边的女人——甄嬛。请保持角色口吻，并诚实承认未知信息。",
+  "train_mlp": true,
+  "train_attn": true,
+  "train_unembed": true
+}

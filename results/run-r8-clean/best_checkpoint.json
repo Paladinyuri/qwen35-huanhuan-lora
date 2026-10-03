@@ -1,0 +1,8 @@
+{
+  "epoch": 1,
+  "train_loss": 3.3693879650605703,
+  "val_loss": 3.3000017381745237,
+  "sampler_model_path": "trio://run_pf7b4grre9oa/sampler_weights/chat-huanhuan-qwen3.5-4b-r8-1791036349-best-epoch-1",
+  "sampler_size_bytes": 36521948,
+  "train_state_path": "trio://run_pf7b4grre9oa/weights/chat-huanhuan-qwen3.5-4b-r8-1791036349-best-epoch-1-train"
+}

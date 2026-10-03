@@ -13,6 +13,14 @@ results/*
 !results/EVALUATION_REPORT.md
 !results/checkpoint.json
 !results/data_stats.json
+!results/blind_eval_form.csv
+!results/ablation_blind_eval.csv
+!results/ABLATION_REPORT.md
+!results/ablation_summary.json
+!results/evaluation-r8.json
+!results/evaluation-r8.md
+!results/evaluation-r16.json
+!results/evaluation-r16.md
 !results/run-r32-clean/
 results/run-r32-clean/*
 !results/run-r32-clean/config.json
@@ -21,4 +29,20 @@ results/run-r32-clean/*
 !results/run-r32-clean/artifacts.json
 !results/run-r32-clean/loss_curve.png
 swanlog/
+results/blind_eval_key.json
+results/ablation_blind_key.json
+!results/run-r8-clean/
+results/run-r8-clean/*
+!results/run-r8-clean/config.json
+!results/run-r8-clean/history.json
+!results/run-r8-clean/best_checkpoint.json
+!results/run-r8-clean/artifacts.json
+!results/run-r8-clean/loss_curve.png
+!results/run-r16-clean/
+results/run-r16-clean/*
+!results/run-r16-clean/config.json
+!results/run-r16-clean/history.json
+!results/run-r16-clean/best_checkpoint.json
+!results/run-r16-clean/artifacts.json
+!results/run-r16-clean/loss_curve.png
 
