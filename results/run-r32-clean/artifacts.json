@@ -1,0 +1,16 @@
+{
+  "base_model": "Qwen/Qwen3.5-4B",
+  "sampler_model_path": "trio://run_pi527bfxi52x/sampler_weights/chat-huanhuan-qwen3.5-4b-r32-1791026877-final",
+  "sampler_size_bytes": 145886189,
+  "train_state_path": "trio://run_pi527bfxi52x/weights/chat-huanhuan-qwen3.5-4b-r32-1791026877-final-train",
+  "completed_steps": 362,
+  "elapsed_seconds": 952.6251182556152,
+  "best_checkpoint": {
+    "epoch": 1,
+    "train_loss": 3.36838358002372,
+    "val_loss": 3.29955797985339,
+    "sampler_model_path": "trio://run_pi527bfxi52x/sampler_weights/chat-huanhuan-qwen3.5-4b-r32-1791026877-best-epoch-1",
+    "sampler_size_bytes": 145886189,
+    "train_state_path": "trio://run_pi527bfxi52x/weights/chat-huanhuan-qwen3.5-4b-r32-1791026877-best-epoch-1-train"
+  }
+}

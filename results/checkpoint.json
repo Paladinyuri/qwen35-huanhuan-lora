@@ -1,10 +1,13 @@
 {
-  "checkpoint_id": "ckpt_dgwydrq0t4zg",
-  "checkpoint_type": "sampler",
-  "created_at_utc": "2026-10-03T07:25:28.919000Z",
-  "path": "trio://run_1hfkezqoye4j/sampler_weights/chat-huanhuan-qwen3.5-4b",
-  "size_bytes": 145889792,
-  "public": false,
-  "expires_at": null,
-  "note": "Sampler 权重可用于推理，不能恢复优化器或原训练曲线。"
+  "run_id": "run_pi527bfxi52x",
+  "swanlab_run": "https://swanlab.cn/@paladin33/chat-huanhuan-lora/runs/2yw77qzq",
+  "selection": "lowest_validation_loss",
+  "best_epoch": 1,
+  "best_validation_loss": 3.29955797985339,
+  "checkpoint_id": null,
+  "type": "sampler",
+  "path": "trio://run_pi527bfxi52x/sampler_weights/chat-huanhuan-qwen3.5-4b-r32-1791026877-best-epoch-1",
+  "size_bytes": 145886189,
+  "train_state_path": "trio://run_pi527bfxi52x/weights/chat-huanhuan-qwen3.5-4b-r32-1791026877-best-epoch-1-train",
+  "final_epoch_path": "trio://run_pi527bfxi52x/sampler_weights/chat-huanhuan-qwen3.5-4b-r32-1791026877-final"
 }

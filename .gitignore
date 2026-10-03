@@ -13,5 +13,12 @@ results/*
 !results/EVALUATION_REPORT.md
 !results/checkpoint.json
 !results/data_stats.json
+!results/run-r32-clean/
+results/run-r32-clean/*
+!results/run-r32-clean/config.json
+!results/run-r32-clean/history.json
+!results/run-r32-clean/best_checkpoint.json
+!results/run-r32-clean/artifacts.json
+!results/run-r32-clean/loss_curve.png
 swanlog/
 

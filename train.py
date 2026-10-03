@@ -63,10 +63,22 @@ def batch_loss(result, batch) -> float:
     return loss_sum / token_count
 
 
+def as_1d_array(values) -> np.ndarray:
+    """兼容 NumPy 数组和 PyTrio 远程数组封装。"""
+    if hasattr(values, "tolist"):
+        values = values.tolist()
+    return np.asarray(values, dtype=np.float64).reshape(-1)
+
+
 def loss_totals(result, batch) -> tuple[float, float]:
     """返回加权负对数似然总和与有效 token 数。"""
-    logprobs = np.concatenate([np.asarray(x["logprobs"]) for x in result.loss_fn_outputs])
-    weights = np.concatenate([np.asarray(x.loss_fn_inputs["weights"]) for x in batch])
+    arrays = []
+    for output in result.loss_fn_outputs:
+        arrays.append(as_1d_array(output["logprobs"]))
+    logprobs = np.concatenate(arrays)
+    weights = np.concatenate([as_1d_array(x.loss_fn_inputs["weights"]) for x in batch])
+    if logprobs.shape != weights.shape:
+        raise ValueError(f"logprobs 与 weights 长度不一致: {logprobs.size} != {weights.size}")
     token_count = float(weights.sum())
     if token_count <= 0:
         raise ValueError("batch 中没有有效的 assistant token")
